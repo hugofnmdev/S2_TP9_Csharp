@@ -8,6 +8,8 @@ namespace Warmup
 	{
 	    Console.WriteLine("je hais emacs");
 	    Console.WriteLine(Warmup.IsPalindrome(Console.ReadLine()));
+		Console.WriteLine(Warmup.RotChar('C', -30));
+		Console.WriteLine(Warmup.RotString("CISCO > MIDLAB", 42));
 	}
     }
 }

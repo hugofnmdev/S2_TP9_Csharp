@@ -27,7 +27,10 @@ namespace CurseCase
         // TODO
         public GenTree(string name, int suspicion, GenTree left, GenTree right)
         {
-            throw new NotImplementedException();
+            this.right = right;
+            this.left = left;
+            this.Name = name;
+            this.Suspicion = suspicion;
         }
 
         /**
@@ -70,25 +73,130 @@ namespace CurseCase
         // TODO
         public static bool ChangeName(GenTree root, string oldname, string newname)
         {
-            throw new NotImplementedException();
+            bool yessay = false;
+            
+            if (root.Name == oldname)
+            {
+                root.Name = newname;
+                return true;
+            }
+            
+            if (root.right != null && root.left != null)
+            {
+                if (ChangeName(root.right, oldname, newname)) yessay=true;
+                if (ChangeName(root.left, oldname, newname)) yessay=true;
+            }
+            
+            return yessay;
+        }
+
+        public static string FindParentName(GenTree myTree, string name)
+        {
+            List<string> treeNames = new List<string>();
+            int namePosition = 0;
+            Queue thicc = new Queue();
+            thicc.Enqueue(myTree);
+            while (thicc.Count != 0)
+            {
+                GenTree a = (GenTree) thicc.Dequeue();
+                if (a.right!=null) thicc.Enqueue(a.right);
+                if (a.left!=null) thicc.Enqueue(a.Left);
+                treeNames.Add(a.Name);
+                if (a.Name == name) namePosition = treeNames.Count/2;
+            }
+            return treeNames[namePosition-1];
         }
 
         // TODO
         public static bool FindPath(GenTree root, string name, List<string> path)
         {
-            throw new NotImplementedException();
+            string parentName = name;
+            while (parentName != root.Name)
+            {
+                bool exist = ChangeName(root, parentName, parentName);
+                if (!exist) return false;
+                parentName = FindParentName(root, parentName);
+                path.Add(parentName);
+            }
+            path.Reverse();
+            return true;
         }
 
         // TODO
         public static string LowestCommonDescendant(GenTree root, string PersonA, string PersonB)
         {
-            throw new NotImplementedException();
+            List<string> DescendantA = new List<string>();
+            List<string> DescendantB = new List<string>();
+            FindPath(root, PersonA, DescendantA);
+            FindPath(root, PersonB, DescendantB);
+            DescendantA.Reverse();
+            DescendantB.Reverse();
+            string common = "";
+            foreach (var valueA in DescendantA)
+            {
+                if (common!="") continue;
+                foreach (var valueB in DescendantB)
+                {
+                    if (valueA == valueB) common = valueA;
+                }
+            }
+            return common;  
         }
 
+        private static void WriteToConsole(List<string> result)
+        {
+            foreach (var line in result)
+            {
+                Console.WriteLine(line);
+            }
+        }
+        private List<string> GetLinesFromGentree(List<GenTree> treeNames)
+        {
+            List<string> result = new List<string>();
+
+            result.Add("graph " + this.Name + " {");
+            foreach (var name in treeNames)
+            {
+                if (name.left != null) result.Add(name.Name + " -- " + name.left.Name + ";");
+                if (name.right != null) result.Add(name.Name + " -- " + name.right.Name + ";");
+            }
+
+            result.Add("}");
+            return result;
+        }
+        private List<GenTree> GetTreeList()
+        {
+            List<GenTree> treeNames = new List<GenTree>();
+            int namePosition = 0;
+            Queue theThicc = new Queue();
+            theThicc.Enqueue(this);
+            while (theThicc.Count != 0)
+            {
+                GenTree a = (GenTree) theThicc.Dequeue();
+                if (a.left != null) theThicc.Enqueue(a.Left);
+                if (a.right != null) theThicc.Enqueue(a.right);
+                treeNames.Add(a);
+            }
+
+            return treeNames;
+        }
+        private static void WriteToFile(List<string> result, string filename)
+        {
+            StreamWriter daStream = new StreamWriter(filename);
+            foreach (var line in result)
+            {
+                daStream.WriteLine(line);
+            }
+            daStream.Close();
+        }  
         // TODO
         public void ToDot()
         {
-            throw new NotImplementedException();
+            var treeNames = GetTreeList();
+            var result = GetLinesFromGentree(treeNames);
+            WriteToConsole(result);
+            WriteToFile(result,""+this.Name + ".dot");
+            
         }
     }
 }
